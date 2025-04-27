@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Robot Calculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="calculator">
+    <div class="robot-head">
+      <div class="eyes">
+        <div class="eye"></div>
+        <div class="eye"></div>
+      </div>
+    </div>
+    
+    <div class="display-container">
+      <input type="text" id="display" readonly>
+    </div>
+    
+    <div class="buttons">
+      <button class="btn" onclick="clearDisplay()">C</button>
+      <button class="btn" onclick="deleteLast()">⌫</button>
+      <button class="btn" onclick="appendValue('(')">(</button>
+      <button class="btn" onclick="appendValue(')')">)</button>
+      
+      <div class="dropdown">
+        <button class="btn dropbtn" onclick="toggleDropdown()">Trig ▼</button>
+        <div id="trigDropdown" class="dropdown-content">
+          <a href="#" onclick="appendTrig('sin')">sin</a>
+          <a href="#" onclick="appendTrig('cos')">cos</a>
+          <a href="#" onclick="appendTrig('tan')">tan</a>
+          <a href="#" onclick="appendTrig('asin')">asin</a>
+          <a href="#" onclick="appendTrig('acos')">acos</a>
+          <a href="#" onclick="appendTrig('atan')">atan</a>
+        </div>
+      </div>
+      
+      <button class="btn" onclick="appendFunc('log')">log</button>
+      <button class="btn" onclick="appendFunc('ln')">ln</button>
+      <button class="btn" onclick="appendFunc('sqrt')">√</button>
+      
+      <button class="btn" onclick="appendConst('Math.PI')">π</button> <!-- Fixed π Button -->
+      <button class="btn" onclick="appendConst('Math.E')">e</button>
+      <button id="deg-btn" class="btn" onclick="toggleDegMode()">DEG</button>
+      <button class="btn" onclick="appendOperator('^')">^</button>
+      
+      <button class="btn" onclick="appendValue('7')">7</button>
+      <button class="btn" onclick="appendValue('8')">8</button>
+      <button class="btn" onclick="appendValue('9')">9</button>
+      <button class="btn" onclick="appendValue('/')">÷</button>
+      
+      <button class="btn" onclick="appendValue('4')">4</button>
+      <button class="btn" onclick="appendValue('5')">5</button>
+      <button class="btn" onclick="appendValue('6')">6</button>
+      <button class="btn" onclick="appendValue('*')">×</button>
+      
+      <button class="btn" onclick="appendValue('1')">1</button>
+      <button class="btn" onclick="appendValue('2')">2</button>
+      <button class="btn" onclick="appendValue('3')">3</button>
+      <button class="btn" onclick="appendValue('-')">-</button>
+      
+      <button class="btn" onclick="appendValue('0')">0</button>
+      <button class="btn" onclick="appendValue('.')">.</button>
+      <button class="btn" onclick="appendValue('+')">+</button>
+      <button class="btn equal" onclick="calculate()">=</button>
+      
+      <button class="btn" onclick="appendFactorial()">!</button> <!-- Factorial Button -->
+      <button class="btn" onclick="appendPermutation()">nPr</button> <!-- Permutation Button -->
+      <button class="btn" onclick="appendCombination()">nCr</button> <!-- Combination Button -->
+      
+      <button class="btn" onclick="toggleFraction()">a/b</button> <!-- Fraction Button -->
+      
+      <button class="btn history-btn" onclick="toggleHistory()">History</button>
+    </div>
+    
+    <div id="history-panel" class="history hidden">
+      <h3>History</h3>
+      <ul id="history-list"></ul>
+    </div>
+  </div>
+  
+  <script src="script.js"></script>
+</body>
+
+</html>
