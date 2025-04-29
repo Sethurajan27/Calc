@@ -1,214 +1,235 @@
-let display = document.getElementById('display');
-let historyPanel = document.getElementById('history-panel');
-let historyList = document.getElementById('history-list');
-let degBtn = document.getElementById('deg-btn');
+const display = document.getElementById('display');
+const historyPanel = document.getElementById('history-panel');
+const historyList = document.getElementById('history-list');
 let history = [];
-let isDegree = true;
-let isFraction = false; // Flag to toggle between fraction and decimal
-let maxInputLength = 50; // Max number of characters to avoid overflow
+let isFraction = false;
+let isDegree = true; // Boolean variable for degree/radian mode
+const maxInputLength = 50;
 
-// Functions to append values, operators, and constants
+const degreeRadianBtn = document.querySelector('.degree-radian-btn');
+
+// Append Functions
 function appendValue(value) {
-    // Prevent the input from getting too long
-    if (display.value.length < maxInputLength) {
-        display.value += value;
-    }
-    ensureCursorVisible();
-}
-
-function appendTrig(func) {
-    display.value += `${func}(`;
-    ensureCursorVisible();
+  if (display.value.length < maxInputLength) {
+    display.value += value;
+  }
+  ensureCursorVisible();
 }
 
 function appendFunc(func) {
-    if (func === 'sqrt') {
-        display.value += `Math.sqrt(`;
-    } else if (func === 'log') {
-        display.value += `Math.log10(`;
-    } else if (func === 'ln') {
-        display.value += `Math.log(`;
-    }
-    ensureCursorVisible();
+  if (func === 'sqrt') display.value += '√(';
+  else if (func === 'log') display.value += 'log(';
+  else if (func === 'ln') display.value += 'ln(';
+  ensureCursorVisible();
 }
 
 function appendConst(constant) {
-    if (constant === 'Math.PI') {
-        display.value += Math.PI; // This will insert the value of π
-    } else if (constant === 'Math.E') {
-        display.value += Math.E; // This will insert the value of e
-    }
-    ensureCursorVisible();
+  if (constant === 'Math.PI') display.value += Math.PI;
+  else if (constant === 'Math.E') display.value += Math.E;
+  ensureCursorVisible();
 }
 
 function appendOperator(op) {
-    display.value += op;
-    ensureCursorVisible();
+  display.value += op;
+  ensureCursorVisible();
+}
+
+function appendTrigFunc(func) {
+  if (func === 'sin' || func === 'cos' || func === 'tan' || func === 'sin⁻¹' || func === 'cos⁻¹' || func === 'tan⁻¹') {
+    display.value += func + '(';
+  }
+  ensureCursorVisible();
 }
 
 function clearDisplay() {
-    display.value = '';
-    ensureCursorVisible();
+  display.value = '';
+  ensureCursorVisible();
 }
 
 function deleteLast() {
-    display.value = display.value.slice(0, -1);
-    ensureCursorVisible();
+  display.value = display.value.slice(0, -1);
+  ensureCursorVisible();
 }
 
-// Factorial Function
 function appendFactorial() {
-    display.value += '!';
-    ensureCursorVisible();
+  display.value += '!';
+  ensureCursorVisible();
 }
 
-// Permutation Function
 function appendPermutation() {
-    display.value += 'P';
-    ensureCursorVisible();
+  display.value += 'P';
+  ensureCursorVisible();
 }
 
-// Combination Function
 function appendCombination() {
-    display.value += 'C';
-    ensureCursorVisible();
+  display.value += 'C';
+  ensureCursorVisible();
 }
 
-// Toggle between degree and radian mode
-function toggleDegMode() {
-    isDegree = !isDegree;
-    
-    // Change button appearance based on the mode
-    degBtn.classList.toggle('active', isDegree);
-    degBtn.classList.toggle('inactive', !isDegree);
-    
-    degBtn.textContent = isDegree ? 'DEG' : 'RAD'; // Update button label
-}
-
-// Function to calculate result
 function calculate() {
-    try {
-        let expression = display.value;
-        
-        // Handling factorial (!)
-        if (expression.includes('!')) {
-            let num = parseInt(expression.replace('!', ''));
-            if (isNaN(num)) {
-                throw new Error('Invalid factorial input');
-            }
-            let result = factorial(num);
-            display.value = result;
-            
-            // Handling Permutation (nPr)
-        } else if (expression.includes('P')) {
-            let [n, r] = expression.split('P').map(Number);
-            let result = calculatePermutation(n, r);
-            display.value = result;
-            
-            // Handling Combination (nCr)
-        } else if (expression.includes('C')) {
-            let [n, r] = expression.split('C').map(Number);
-            let result = calculateCombination(n, r);
-            display.value = result;
-            
-            // Regular calculations
-        } else {
-            let result = evaluateExpression(expression);
-            result = Math.round(result * 1e6) / 1e6; // Round to 6 decimal places
-            display.value = result;
-        }
-        
-        history.push(`${expression} = ${display.value}`);
-        updateHistory();
-    } catch (err) {
-        display.value = 'Error';
-    }
-}
-
-// Evaluate the expression with trigonometric functions
-function evaluateExpression(expression) {
-    expression = expression
-        .replace(/sin([^)]+)/g, (_, angle) => `sin(${angle})`)
-        .replace(/cos([^)]+)/g, (_, angle) => `cos(${angle})`)
-        .replace(/tan([^)]+)/g, (_, angle) => `tan(${angle})`)
-        .replace(/sin⁻¹([^)]+)/g, (_, value) => `asin(${value})`)
-        .replace(/cos⁻¹([^)]+)/g, (_, value) => `acos(${value})`)
-        .replace(/tan⁻¹([^)]+)/g, (_, value) => `atan(${value})`)
-        .replace(/\^/g, '**'); // Replace ^ with ** for power operation
+  try {
+    let expression = display.value;
     
-    return eval(expression);
+    // Handle log and ln as Math.log10 and Math.log respectively
+    expression = expression.replace(/log/g, 'Math.log10');
+    expression = expression.replace(/ln/g, 'Math.log');
+    expression = expression.replace(/√/g, 'Math.sqrt');
+    
+    // Handle trigonometric functions (degree/radian adjustment)
+    if (isDegree) {
+      if (expression.includes('sin(')) {
+        expression = expression.replace(/sin([^)]+)/g, 'Math.sin(degToRad$1)');
+        display.value = expression;
+      }
+      if (expression.includes('cos(')) {
+        expression = expression.replace(/cos([^)]+)/g, 'Math.cos(degToRad$1)');
+      }
+      if (expression.includes('tan(')) {
+        expression = expression.replace(/tan([^)]+)/g, 'Math.tan(degToRad$1)');
+      }
+      if (expression.includes('sin⁻¹(')) {
+        expression = expression.replace(/sin⁻¹([^)]+)/g, 'radToDeg(Math.asin$1)');
+      }
+      if (expression.includes('cos⁻¹(')) {
+        expression = expression.replace(/cos⁻¹([^)]+)/g, 'radToDeg(Math.acos$1)');
+      }
+      if (expression.includes('tan⁻¹(')) {
+        expression = expression.replace(/tan⁻¹([^)]+)/g, 'radToDeg(Math.atan$1)');
+      }
+    } else {
+      if (expression.includes('sin')) {
+        expression = expression.replace(/sin/g, 'Math.sin');
+        display.value = expression;
+      }
+      if (expression.includes('cos')) {
+        expression = expression.replace(/cos/g, 'Math.cos');
+      }
+      if (expression.includes('tan')) {
+        expression = expression.replace(/tan/g, 'Math.tan');
+      }
+      if (expression.includes('sin⁻¹')) {
+        expression = expression.replace(/sin⁻¹/g, 'asin');
+      }
+      if (expression.includes('cos⁻¹')) {
+        expression = expression.replace(/cos⁻¹/g, 'acos');
+      }
+      if (expression.includes('tan⁻¹')) {
+        expression = expression.replace(/tan⁻¹/g, 'atan');
+      }
+    }
+    // Handle factorial, permutation, and combination
+    if (expression.includes('!')) {
+      expression = expression.replace(/(\d+)!/g, (_, n) => factorial(Number(n)));
+    }
+    if (expression.includes('P')) {
+      expression = expression.replace(/(\d+)P(\d+)/g, (_, n, r) => calculatePermutation(Number(n), Number(r)));
+    }
+    if (expression.includes('C')) {
+      expression = expression.replace(/(\d+)C(\d+)/g, (_, n, r) => calculateCombination(Number(n), Number(r)));
+    }
+    {
+      let result = evaluateExpression(expression);
+      result = Math.round(result * 1e6) / 1e6;
+      display.value = result;
+    }
+    
+    history.push(`${expression} = ${display.value}`);
+    updateHistory();
+  } catch (err) {
+    display.value = err.name;
+  }
 }
 
-// Update history display
+function evaluateExpression(expression) {
+  expression = expression.replace(/\^/g, '**'); // Handle power operator
+  return eval(expression);
+}
+
+function factorial(n) {
+  return n <= 1 ? 1 : n * factorial(n - 1);
+}
+
+function calculatePermutation(n, r) {
+  return factorial(n) / factorial(n - r);
+}
+
+function calculateCombination(n, r) {
+  return factorial(n) / (factorial(r) * factorial(n - r));
+}
+
 function updateHistory() {
-    historyList.innerHTML = '';
-    history.slice().reverse().forEach(item => {
-        let li = document.createElement('li');
-        li.textContent = item;
-        historyList.appendChild(li);
-    });
+  historyList.innerHTML = '';
+  history.slice().reverse().forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = item;
+    historyList.appendChild(li);
+  });
 }
 
-// Toggle history panel visibility
 function toggleHistory() {
-    historyPanel.classList.toggle('hidden');
+  historyPanel.classList.toggle('hidden');
 }
 
+function toggleFraction() {
+  let value = display.value;
+  
+  if (isFraction) {
+    if (value.includes('/')) {
+      let [numerator, denominator] = value.split('/');
+      display.value = (parseFloat(numerator) / parseFloat(denominator)).toString();
+    }
+  } else {
+    if (!value.includes('/')) {
+      let decimalValue = parseFloat(value);
+      if (isNaN(decimalValue)) return;
+      
+      let fraction = decimalToFraction(decimalValue);
+      display.value = `${fraction.numerator}/${fraction.denominator}`;
+    }
+  }
+  
+  isFraction = !isFraction;
+  ensureCursorVisible();
+}
+
+function decimalToFraction(decimal) {
+  let denominator = 1;
+  let numerator = decimal;
+  
+  while (numerator % 1 !== 0) {
+    numerator *= 10;
+    denominator *= 10;
+  }
+  
+  let gcd = greatestCommonDivisor(numerator, denominator);
+  numerator /= gcd;
+  denominator /= gcd;
+  
+  return { numerator, denominator };
+}
+
+function greatestCommonDivisor(a, b) {
+  return b === 0 ? a : greatestCommonDivisor(b, a % b);
+}
+
+function ensureCursorVisible() {
+  display.scrollLeft = display.scrollWidth;
+}
+
+function degToRad(degrees) {
+  return degrees * (Math.PI / 180);
+}
+
+function radToDeg(radian) {
+  return radian * (180 / Math.PI);
+}
 // Toggle dropdown for trigonometric functions
 function toggleDropdown() {
-    document.querySelector('.dropdown').classList.toggle('show');
+  document.querySelector('.dropdown').classList.toggle('show');
 }
 
-// Convert decimal to fraction and vice versa
-function toggleFraction() {
-    let value = display.value;
-    
-    if (isFraction) {
-        // Convert fraction to decimal
-        if (value.includes('/')) {
-            let [numerator, denominator] = value.split('/');
-            display.value = (parseFloat(numerator) / parseFloat(denominator)).toString();
-        }
-    } else {
-        // Convert decimal to fraction
-        if (!value.includes('/')) {
-            let decimalValue = parseFloat(value);
-            if (isNaN(decimalValue)) {
-                return; // Only convert if it's a valid number
-            }
-            
-            let fraction = decimalToFraction(decimalValue);
-            display.value = `${fraction.numerator}/${fraction.denominator}`;
-        }
-    }
-    
-    isFraction = !isFraction; // Toggle the flag
-    ensureCursorVisible();
-}
-
-// Convert decimal to fraction
-function decimalToFraction(decimal) {
-    let denominator = 1;
-    let numerator = decimal;
-    
-    while (numerator % 1 !== 0) {
-        numerator *= 10;
-        denominator *= 10;
-    }
-    
-    let gcd = greatestCommonDivisor(numerator, denominator);
-    numerator /= gcd;
-    denominator /= gcd;
-    
-    return { numerator, denominator };
-}
-
-// Calculate the greatest common divisor (GCD) of two numbers
-function greatestCommonDivisor(a, b) {
-    return b === 0 ? a : greatestCommonDivisor(b, a % b);
-}
-
-// Ensure cursor is visible while typing large numbers
-function ensureCursorVisible() {
-    display.scrollLeft = display.scrollWidth; // Scroll input field to the right to keep the cursor visible
+function toggleMode() {
+  isDegree = !isDegree; // Toggle between degree and radian
+  degreeRadianBtn.textContent = isDegree ? 'Degree' : 'Radian'; // Update button text
+  degreeRadianBtn.classList.toggle('active', isDegree); // Toggle active class
 }
